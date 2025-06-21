@@ -1,0 +1,44 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: n8n_mssql
+    environment:
+      SA_PASSWORD: "YourStrong!Pass123"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    ports:
+      - "1235:1433"  # Host port 1235 → Container port 1433
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - n8n_network
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: true
+      N8N_BASIC_AUTH_USER: admin
+      N8N_BASIC_AUTH_PASSWORD: strongpassword
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      TZ: Europe/Bangkok
+      GENERIC_TIMEZONE: Asia/Bangkok
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./shared_files:/files
+    depends_on:
+      - mssql
+    networks:
+      - n8n_network
+
+volumes:
+  mssql_data:
+  n8n_data:
+
+networks:
+  n8n_network:
+    driver: bridge
